@@ -1,0 +1,43 @@
+{
+  "name": "dsh-sticker-look",
+  "version": "0.2.2",
+  "description": "看清一张图或表情包到底在说什么：动图抽帧拼联系表，库里有的按约定读，库里没有的不下结论。零运行时依赖。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./look": {
+      "default": "./lib/look.js"
+    }
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "PROMPT.md",
+    "README.md",
+    "test"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "stickers",
+    "vision",
+    "gif"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-tools": ">=0.1.0-rc.6 <0.3.0",
+    "@deepseek-ai/schemastery": "^3.18.0"
+  },
+  "scripts": {
+    "test": "node test/selfcheck.mjs"
+  }
+}
