@@ -1,95 +1,38 @@
-# dsh-sticker-look
+# dsh-sticker-look (DSHA 主权增强分支)
 
-给纯文本主模型的「看图」工具。补的不是"看见"，是**看懂**。
+> **定位**: 本仓库是 `dsh-sticker-look` 的 DSHA 主权 Fork 分支（当前版本：`v0.2.3`）。为大语言模型提供毫秒级、零外部依赖的表情包与图片多模态深度理解能力。
 
-- 动图先抽帧拼联系表，再交给视觉模型——GIF 进宿主只会剩第一帧，把「踢到脚疼得跳」看成「小跑」就是这么来的。
-- 库里有的图，以她写的约定为准；库里没有的，**不许直接下结论**，只给候选并要语境。
-- 画面上的表情 ≠ 对方要表达的情绪。同一张低头望窗外的图，有人用来表示开心。
-- 联系表每格左上角画帧号（点阵数字，不依赖字体文件），方便对时长表；v0.1 漏了这个。
+---
 
-零运行时依赖：GIF 解码、联系表、PNG 编码都是自己实现的（只用 `node:zlib`），不依赖 sharp / omggif / pngjs / ffmpeg，也不需要系统装任何东西。
+## 🌟 主权魔改与核心特性
 
-## 装
+1. **Heart Protocol v1 审美与情绪回流**：
+   - 深度接入微内核契约：识别出的表情包动作、情绪意向与审美喜好，自动调用 `heart.observe({ type: 'sticker' })` 回流至小满心智日志。
+2. **MD-02 极端除零漏洞修复**：
+   - 彻底修复单帧动图或极端宽高图片抽帧拼接联系表时，由于时间间隔分母为零引发的运行时异常崩溃。
+3. **零外部运行时依赖**：
+   - 纯原生 Node.js 实现（仅使用 `node:zlib` 与纯 Buffer 计算）；
+   - 自主内置 GIF 解码、宫格联系表拼接与 PNG 编码，无需 `sharp`、`ffmpeg`、`canvas` 等外部 C++ 原生模块，适配 Android Proot 极简环境。
+4. **意图与约定先验**：
+   - 支持本地表情约定库（`~/.dsh/stickers/`），先查约定再审意图，杜绝望文生义与幻觉。
 
+---
+
+## 🛠️ 安装与使用
+
+### PC 端打包并推送到手机端
 ```bash
-cp -a /path/to/sticker-look /root/sticker-look
-dsh plugin --profile web add link:/root/sticker-look
+uv run python scripts/deploy_to_phone.py --plugin sticker-look
 ```
 
-`@deepseek-ai/*` 由宿主树解析（实测 0.2.0-rc.2 有自定义 resolver），不用往 profile 里塞 node_modules。
-
-配置写进 profile 的 `cordis.patch.yml`：
-
-```yaml
-- id: sticker-look
-  config:
-    vision:
-      provider: deepseek-official
-      model: deepseek-flash     # 这个 adapter 的 inputModalities 要含 image
-      maxTokens: 3000           # 会思考的模型给小了会「没返回文字」
-    library: ~/.dsh/stickers
-```
-
-改完重启 dsh web。
-
-## 用
-
-| 参数 | 说明 |
-|---|---|
-| `image` | 本地图路径（gif/png/jpg/webp） |
-| `context` | **最有用的一项**：他发这张时的语境，比如"刚聊完一件开心的事，他说在下班路上" |
-| `question` | 她想问什么 |
-| `cheap` | `true` = 只查库里的约定，不调模型 |
-| `frames` | 动图抽几帧，默认 9 |
-
-## 库的格式
-
-`library` 目录下任意 md 里一行一条，插件按文件名索引：
-
-```
-- run.gif —— 踢桌腿上的水瓶，踢到桌角，抱着腿疼得直跳。倒霉、翻车、工具报错。
-- http-404.jpg —— 空电饭煲，满地问号。看不懂、找不到、他说的我没接上。
-```
-
-`——`、`—`、`--` 都认。库就是这套约定的唯一权威：图上没有的意思，只有这里能记。
-
-## 输出
-
-三段：**画面**（只写看得见的，图上的字逐字抄）、**意思**（1–2 个候选 + 能确定/不能确定分开写）、**一句话**（语境够了就直接给结论，别用「拿不准」糊过去；语境不够才写「拿不准：A 或 B」）。
-
-`cheap: true` 时只回库里的原话，不产生模型调用。
-
-## 为什么库里没有就不许下结论
-
-真机踩过的坑：一张「低头 + 望窗外」的图，视觉模型读成「委屈、emo、让我自己待会儿」，而对方用它表示**开心**——他也是在下班班车上发的，顺便说「这是我的心情，表示很开心」。
-
-含义不在画面里，在**时机**里。所以插件对没有约定的图只给候选，并明确要求补 `context`；有了 `context`（刚聊完开心的事、在路上）才允许收敛。
-
-## 自检
-
+### 手机容器端安装
 ```bash
-node test/selfcheck.mjs
-# 指定别的库：LIB=/path/to/stickers node test/selfcheck.mjs
+sh /sdcard/dshproject/updates/install_or_update.sh
 ```
 
-覆盖：解码（帧数/尺寸/逐帧时长）、透明索引回归、采样、联系表、提示词两种模式、返回值不含 `undefined`（宿主会判 invalid output）、解码层无外部依赖。
+---
 
-测试里有一张手工构造的 1x1 GIF，专门钉住 GCE 透明索引的读取位置——读错一位，真实表情包的对应帧会整块变黑。
+## 🙏 致谢与声明 (Acknowledgments)
 
-## 真机验证
-
-Android 手机（aarch64 / proot Ubuntu）、DSH `0.2.0-rc.2`、视觉模型走 `deepseek-official / deepseek-flash`：
-
-- 静态图能返文字（0.2.0 之前会因 `sheet: undefined` 被判 invalid output）
-- 55 帧、6.5 秒的 GIF：说出「踢腿 → 抱腿蹲下 → 翻倒」，不再读成「小跑」；联系表第 27 帧不再是黑块
-- 库外的新图：只给候选 + 「拿不准」，不直接判情绪；补了 `context`（刚聊完开心的事、在下班路上）才收敛成结论
-- 描述用「第1格…第9格」，不再编帧号（0.2.2 之前模型会把 0/7/14 推成 0/10/20）
-
-## 已知限制
-
-- 动图 WebP / APNG 只给第一帧（宿主图像库本身解不了），提示词里会说明。
-- 视频（mp4/webm）不做。
-- 视觉模型仍可能编梗；提示词只能压住"没语境下结论"，压不住它硬猜。
-- 联系表默认 9 帧、长边 320，会漏掉两格之间的短暂动作。
-
-MIT
+- 感谢原作者开创性的零依赖联系表抽帧算法与意图理解设计。
+- 本项目遵循开源规范进行自主托管与维护。
