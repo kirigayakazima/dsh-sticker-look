@@ -3,7 +3,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { buildPrompt, buildResult, parseLibraryText, prepareLook, readLibrary, sniff } from '../lib/look.js'
+import { buildPrompt, buildResult, parseLibraryText, prepareLook, readLibrary, sniff, inferStickerMeaning } from '../lib/look.js'
 import { parseGif } from '../lib/gif.js'
 import { makeSheet, sampleIndexes } from '../lib/sheet.js'
 
@@ -49,6 +49,13 @@ ok(px(10, 20)[0] > 180 && px(10, 20)[1] < 100, '第 0 帧红块位置正确', px
 console.log('[sample]')
 ok(sampleIndexes(8, 9).length === 8, '要 9 帧只有 8 帧时全给')
 ok(sampleIndexes(55, 9).length === 9, '长动图刚好 9 个采样点', sampleIndexes(55, 9).join(','))
+ok(sampleIndexes(8, 1).length === 1 && sampleIndexes(8, 1)[0] === 0, '单帧采样 (8, 1) 不产生 NaN')
+ok(sampleIndexes(1, 1).length === 1 && sampleIndexes(1, 1)[0] === 0, '单帧采样 (1, 1) 正确返回 [0]')
+
+console.log('[heart: 意图推断]')
+ok(inferStickerMeaning('好搞笑的表情', '', '') === 'funny', '推断 funny 意图')
+ok(inferStickerMeaning('给你一个抱抱安慰', '', '') === 'comfort', '推断 comfort 意图')
+ok(inferStickerMeaning('风景图打卡', '', '') === 'interaction', '常规图推断 interaction 意图')
 
 console.log('[sheet]')
 const sheet = makeSheet(gif, { maxFrames: 4, cols: 2 })
