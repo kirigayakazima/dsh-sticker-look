@@ -1,3 +1,10 @@
+> [!IMPORTANT]
+> **此仓库已正式合并入统一伴侣主仓 [LucidHeart](https://github.com/kirigayakazima/LucidHeart)。**  
+> 
+> 本仓库现已进入只读归档状态。后续最新代码与维护均在主仓的 [`packages/sticker-look`](https://github.com/kirigayakazima/LucidHeart/tree/main/packages/sticker-look) 目录下进行。
+
+---
+
 # dsh-sticker-look (DSHA 主权增强分支)
 
 > **定位**: 本仓库是 `dsh-sticker-look` 的 DSHA 主权 Fork 分支（当前版本：`v0.2.3`）。为大语言模型提供毫秒级、零外部依赖的表情包与图片多模态深度理解能力。
